@@ -7,7 +7,6 @@ import java.util.*;
         int t1 = seconds / 60;
         int t2 = t1 % 60;
         t1 = t1 / 60;
-        System.out.print(t1 + ":" + t2);
-        System.out.print("\n");
+        System.out.println(t1 + ":" + t2);
     }    
  }
