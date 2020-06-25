@@ -1,0 +1,13 @@
+import java.util.*;
+ public class Seconds_to_Real_Time {
+ public static void main(String[] args) {
+        Scanner in = new Scanner(System.in);
+        System.out.print("Input seconds: ");
+        int seconds = in.nextInt(); 
+        int t1 = seconds / 60;
+        int t2 = t1 % 60;
+        t1 = t1 / 60;
+        System.out.print(t1 + ":" + t2);
+        System.out.print("\n");
+    }    
+ }
