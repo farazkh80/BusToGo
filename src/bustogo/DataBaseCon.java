@@ -123,7 +123,7 @@ public class DataBaseCon {
         }
     }
 
-    void createRouteTable(String tableName) {
+    void createStopListTable(String tableName) {
 
         try {
             //using prepared statement to create a table for the posts of the Club
@@ -178,7 +178,7 @@ public class DataBaseCon {
         try {
 
             PreparedStatement stmt = routeTimesCon().prepareStatement("CREATE TABLE `" + tableName + "` (id int PRIMARY KEY AUTO_INCREMENT NOT NULL, routeandtime varchar(1000)"
-                    + " not null);");
+                    + " not null, starttime int not null);");
 
             stmt.execute();
             System.out.println("Succesfully Created the route Times list Table.");
@@ -213,11 +213,12 @@ public class DataBaseCon {
 
     }
 
-    void insertRouteAndTime(int routeId, int startTime) {
+    void insertRouteAndTimeIntoList(int routeId, int startTime) {
         try {
 
-            PreparedStatement stmt = routeTimesCon().prepareStatement("INSERT INTO `" + getRouteName(routeId) + "` (routeandtime) VALUES (?)");
+            PreparedStatement stmt = routeTimesCon().prepareStatement("INSERT INTO `" + getRouteName(routeId) + "` (routeandtime, starttime) VALUES (?, ?)");
             stmt.setString(1, getRouteName(routeId) + "_" + startTime);
+            stmt.setInt(2, startTime);
 
             stmt.execute();
             System.out.println("Succesfully added the root and time to the times list db.");
@@ -229,8 +230,12 @@ public class DataBaseCon {
         }
 
     }
+    void insertTimeData(int routeId, int startTime){
+        
+        getStopNamesForTimeDataInsertion(routeId, startTime);
+    }
 
-    void insertTimeData(int routeId, int startTime) {
+    void getStopNamesForTimeDataInsertion(int routeId, int startTime) {
 
         String stopName;
         Scanner input = new Scanner(System.in);
@@ -244,7 +249,7 @@ public class DataBaseCon {
                 System.out.println("Enter the time of departure from " + stopName);
                 int time = input.nextInt();
 
-                insertTimeData2(routeId, startTime, stopName, time);
+                insertTimeDataForStops(routeId, startTime, stopName, time);
 
             }
         } catch (ClassNotFoundException | SQLException ex) {
@@ -254,7 +259,7 @@ public class DataBaseCon {
 
     }
 
-    void insertTimeData2(int routeId, int startTime, String stopName, int time) {
+    void insertTimeDataForStops(int routeId, int startTime, String stopName, int time) {
 
         try {
             Class.forName("com.mysql.jdbc.Driver");
