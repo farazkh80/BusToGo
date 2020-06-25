@@ -16,6 +16,13 @@ public class BusRoute {
     private static int busRouteId;
     private static String busRouteName;
     private static int routeStartTime;
+    private static int routeAndTimeId;
+    private static String routeAndTimeName;
+    private static int departureStopId;
+    private static int destinationStopId;
+    private static int numberOfBookingTickets;
+    private static int departureTime;
+
     DataBaseCon db = new DataBaseCon();
     Scanner input = new Scanner(System.in);
 
@@ -55,6 +62,46 @@ public class BusRoute {
 
     }
 
+    public int getRouteAndTimeId() {
+
+        return routeAndTimeId;
+    }
+
+    public void setDepartureStopId() {
+        System.out.println("Enter the id Of the stop you would like to depart on");
+        departureStopId = input.nextInt();
+    }
+
+    public int getDepartureStopId() {
+        return departureStopId;
+
+    }
+
+    public void setDestinationStopId() {
+        System.out.println("Enter the id Of the stop you would like to get off");
+        destinationStopId = input.nextInt();
+    }
+
+    public int getDestinationStopId() {
+        return destinationStopId;
+    }
+
+    public void setNumberOfBookingTickets() {
+        System.out.println("Enter the number of the tickets you would like to book");
+        numberOfBookingTickets = input.nextInt();
+    }
+
+    public int getNumberOfBookingTickets() {
+
+        return numberOfBookingTickets;
+
+    }
+
+    public int getDepartureTime() {
+
+        return departureTime;
+    }
+
     public void insertRoute() {
 
         setBusRouteName();
@@ -66,6 +113,14 @@ public class BusRoute {
     public void getRoutesList() {
 
         db.getRouteList();
+    }
+
+    public void getStopList(int routeId) {
+
+        busRouteId = routeId;
+
+        db.getStopList(getBusRouteId());
+
     }
 
     public void createStopListTable() {
@@ -122,6 +177,87 @@ public class BusRoute {
 
         db.insertRouteAndTimeIntoList(getBusRouteId(), getBusRouteStartTime());
 
+    }
+
+    public void getTheListOfRoutesAndTimes(int routeId) {
+
+        busRouteId = routeId;
+
+        db.getTheListOfRoutesAndTimes(busRouteId);
+    }
+
+    public void chooseYourRouteAndTime() {
+        System.out.println("\n\nEnter the id of the route and time you would like to choose");
+        routeAndTimeId = input.nextInt();
+
+        db.chooseRouteAndTime(getBusRouteId(), db.findRouteAndTimeName(getBusRouteId(), getRouteAndTimeId()));
+    }
+
+    public void bookTicketManually() {
+
+        setDepartureStopId();
+        System.out.println("\n\n");
+        setDestinationStopId();
+        System.out.println("\n\n");
+        setNumberOfBookingTickets();
+        System.out.println("\n\n");
+
+        if (db.checkSpace(getBusRouteId(), db.findRouteAndTimeName(getBusRouteId(), getRouteAndTimeId()),
+                getDepartureStopId(),
+                getDestinationStopId(),
+                getNumberOfBookingTickets()
+        )) {
+
+            System.out.println("\n\nWould You Like to Finalize? Y/N");
+
+            String finalizeOrder = input.next();
+
+            if (finalizeOrder.equals("y")) {
+
+                db.bookTickets(getBusRouteId(), db.findRouteAndTimeName(getBusRouteId(), getRouteAndTimeId()),
+                        getDepartureStopId(),
+                        getDestinationStopId(),
+                        getNumberOfBookingTickets()
+                );
+
+            }
+        }
+
+    }
+
+    public String findTheEarliestBus(int departureId, int departTime, int destinationId, int numberOfTickets) {
+
+        departureStopId = departureId;
+        departureTime = departTime;
+        destinationStopId = destinationId;
+        numberOfBookingTickets = numberOfTickets;
+
+        routeAndTimeName = db.findTheEarliestBus(getBusRouteId(), getDepartureStopId(), getDepartureTime(), getDestinationStopId(), getNumberOfBookingTickets());
+
+        return routeAndTimeName;
+
+    }
+
+    public void bookTicketsForTheEarliestPossible(String earliestRouteAndTimeName){
+
+        routeAndTimeName = earliestRouteAndTimeName;
+
+        if (!(routeAndTimeName.equals("notFound"))) {
+
+            System.out.println("\n\nWould You Like to Finalize? Y/N");
+
+            String finalizeOrder = input.next();
+            if (finalizeOrder.equals("y")) {
+
+                db.bookTickets(getBusRouteId(), routeAndTimeName,
+                        getDepartureStopId(),
+                        getDestinationStopId(),
+                        getNumberOfBookingTickets()
+                );
+
+            }
+
+        }
     }
 
 }
