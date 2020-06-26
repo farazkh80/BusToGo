@@ -21,7 +21,7 @@ public class ClientApp {
         System.out.println("Welcome Client.\n\n");
 
         System.out.println("You can either book a bus ticket by seeing all the available routes and times manually,\nor you can simply enter your desired location and time"
-                + "and BustoGo will find you the best option right away.\n\n");
+                + " and BustoGo will find you the best option right away.\n\n");
 
         System.out.println("Please Choose an option:\n1-Seeing and Choosing a route and a time manually\n2-Find me the earliest bus");
 

@@ -417,12 +417,12 @@ public class DataBaseCon {
                             available = true;
                         } else {
 
-                            System.out.println("Sorry, not enough space at " + rs.getString("stopName"));
+                           
                             available = false;
                         }
                     } else {
 
-                        System.out.println("Sorry, Bus is full at " + rs.getString("stopName"));
+                        
                         available = false;
                     }
 
@@ -432,17 +432,13 @@ public class DataBaseCon {
 
             }
 
-            if (available) {
-
-                System.out.println("Enough Space availble!");
-
-            }
-
+            
         } catch (ClassNotFoundException | SQLException ex) {
 
             Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
         }
-
+        
+        
         return available;
 
     }
@@ -604,6 +600,7 @@ public class DataBaseCon {
                         if (stopTime - departureTime >= 0 && stopTime - departureTime <= minDiff) {
 
                             if (checkSpace(routeId, routeAndTimeName, departureId, destinationId, numOfTickets)) {
+                                 System.out.println("Enough Space available!\n\n");
                                 System.out.println("You have the following option");
 
                                 stopId = rs2.getInt("id");
