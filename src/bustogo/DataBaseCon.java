@@ -21,6 +21,7 @@ import java.util.logging.Logger;
  */
 public class DataBaseCon {
 
+    //connection methods
     Connection createDataBaseCon() throws ClassNotFoundException {
 
         Connection con = null;
@@ -57,6 +58,7 @@ public class DataBaseCon {
         return con;
     }
 
+    //seconds to realtime conversion method
     String returnRealTime(int seconds) {
 
         int t1 = 0, t2 = 0, t3 = 0, remainder = 0;
@@ -78,6 +80,7 @@ public class DataBaseCon {
         }
     }
 
+    //realtime to seconds conversion method
     int getSeconds(String realTime) {
         int seconds, minutes, hours;
 
@@ -110,6 +113,7 @@ public class DataBaseCon {
         return seconds;
     }
 
+    //get lists methods
     String getRouteName(int routeId) {
         String routeName = null;
 
@@ -160,6 +164,120 @@ public class DataBaseCon {
 
     }
 
+    void getStopNamesForTimeDataInsertion(int routeId, int startTime) {
+
+        String stopName;
+        Scanner input = new Scanner(System.in);
+        try {
+            //using prepared statement to get the list of clubs
+            Statement stmt = routesCon().createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "`");
+            while (rs.next()) {
+
+                stopName = rs.getString("stopname");
+                System.out.println("\n\nEnter the time of departure from " + stopName + " (HH:MM)");
+                String time = input.next();
+
+                insertTimeDataForStops(routeId, startTime, stopName, getSeconds(time));
+
+            }
+        } catch (ClassNotFoundException | SQLException ex) {
+            //shows error if unsuccessful
+            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    void getTheListOfRoutesAndTimes(int routeId) {
+
+        int routeAndTimeId;
+        String routeAndTime;
+        int startTime;
+
+        try {
+
+            Statement stmt = routeTimesCon().createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "` ORDER BY starttime ASC");
+            while (rs.next()) {
+
+                routeAndTimeId = rs.getInt("id");
+                routeAndTime = rs.getString("routeandtime");
+                startTime = rs.getInt("starttime");
+
+                System.out.println("ID: " + routeAndTimeId + "\t\tRoute: " + getRouteName(routeId) + "\t\tTime: " + returnRealTime(startTime));
+
+            }
+            stmt.close();
+        } catch (ClassNotFoundException | SQLException ex) {
+
+            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    void getStopList(int routeId) {
+
+        String stopName;
+        int stopId;
+
+        try {
+
+            Statement stmt = routesCon().createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "`");
+
+            while (rs.next()) {
+
+                stopId = rs.getInt("id");
+                stopName = rs.getString("stopname");
+
+                System.out.println("ID: " + stopId + "\t\tStop: " + stopName);
+                System.out.println("");
+
+            }
+            stmt.close();
+        } catch (ClassNotFoundException | SQLException ex) {
+
+            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    void chooseRouteAndTime(int routeId, String routeAndTimeName) {
+
+        int stopId;
+        String stopName;
+        int stopTime;
+        int currentCap;
+        int maxCap;
+
+        try {
+
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + getRouteName(routeId), "root", "Mypassword1234");
+
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + routeAndTimeName + "`");
+            while (rs.next()) {
+
+                stopId = rs.getInt("id");
+                stopName = rs.getString("stopname");
+                stopTime = rs.getInt("time");
+                currentCap = rs.getInt("currentcap");
+                maxCap = rs.getInt("maxcap");
+
+                System.out.println("\n\nID: " + stopId + "\t\tStop Name: " + stopName + "\nTime: " + returnRealTime(stopTime) + "\t\tCurrent Capacity: "
+                        + currentCap + "\t\tMaximum Capacity: " + maxCap);
+                System.out.println("");
+                System.out.println("");
+
+            }
+            stmt.close();
+        } catch (ClassNotFoundException | SQLException ex) {
+
+            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    //insert methods
     void insertRoute(String route) {
 
         try {
@@ -178,6 +296,67 @@ public class DataBaseCon {
         }
     }
 
+    void insertStopName(String routeName, String stopName) {
+
+        try {
+
+            PreparedStatement stmt = routesCon().prepareStatement("INSERT INTO `" + routeName + "` (stopname) VALUES (?)");
+            stmt.setString(1, stopName);
+            stmt.execute();
+            System.out.println("\n----Succesfully added the new stop----\n");
+            stmt.close();
+
+        } catch (ClassNotFoundException | SQLException ex) {
+
+            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    void insertRouteAndTimeIntoList(int routeId, int startTime) {
+        try {
+
+            PreparedStatement stmt = routeTimesCon().prepareStatement("INSERT INTO `" + getRouteName(routeId) + "` (routeandtime, starttime) VALUES (?, ?)");
+            stmt.setString(1, getRouteName(routeId) + "_" + startTime);
+            stmt.setInt(2, startTime);
+
+            stmt.execute();
+            System.out.println("\n----Succesfully added the root and time to the times list data base----\n");
+            stmt.close();
+
+        } catch (ClassNotFoundException | SQLException ex) {
+
+            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    void insertTimeData(int routeId, int startTime) {
+
+        getStopNamesForTimeDataInsertion(routeId, startTime);
+    }
+
+    void insertTimeDataForStops(int routeId, int startTime, String stopName, int time) {
+
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + getRouteName(routeId), "root", "Mypassword1234");
+
+            PreparedStatement stmt = con.prepareStatement("INSERT INTO `" + getRouteName(routeId) + "_" + startTime + "` (stopname, time, currentcap, maxcap) VALUES (?, ?, 0, 30)");
+            stmt.setString(1, stopName);
+            stmt.setInt(2, time);
+
+            stmt.execute();
+            System.out.println("\n----Succesfully added the new stop to the time table----\n");
+            stmt.close();
+
+        } catch (ClassNotFoundException | SQLException ex) {
+
+            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    //create methods
     void createStopListTable(String tableName) {
 
         try {
@@ -212,22 +391,6 @@ public class DataBaseCon {
 
     }
 
-    void insertStopName(String routeName, String stopName) {
-
-        try {
-
-            PreparedStatement stmt = routesCon().prepareStatement("INSERT INTO `" + routeName + "` (stopname) VALUES (?)");
-            stmt.setString(1, stopName);
-            stmt.execute();
-            System.out.println("Succesfully added the new stop.");
-            stmt.close();
-
-        } catch (ClassNotFoundException | SQLException ex) {
-
-            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     void createTimesListTable(String tableName) {
 
         try {
@@ -236,7 +399,7 @@ public class DataBaseCon {
                     + " not null, starttime int not null);");
 
             stmt.execute();
-            System.out.println("Succesfully Created the route Times list Table.");
+            System.out.println("\n----Succesfully Created the route Times list Table----\n");
             stmt.close();
 
         } catch (ClassNotFoundException | SQLException ex) {
@@ -258,7 +421,7 @@ public class DataBaseCon {
                     + "currentcap int not null, maxcap int not null);");
 
             stmt.execute();
-            System.out.println("Succesfully Created the route Time Table.");
+            System.out.println("\n----Succesfully Created the route Time Table----\n");
             stmt.close();
 
         } catch (ClassNotFoundException | SQLException ex) {
@@ -268,100 +431,7 @@ public class DataBaseCon {
 
     }
 
-    void insertRouteAndTimeIntoList(int routeId, int startTime) {
-        try {
-
-            PreparedStatement stmt = routeTimesCon().prepareStatement("INSERT INTO `" + getRouteName(routeId) + "` (routeandtime, starttime) VALUES (?, ?)");
-            stmt.setString(1, getRouteName(routeId) + "_" + startTime);
-            stmt.setInt(2, startTime);
-
-            stmt.execute();
-            System.out.println("Succesfully added the root and time to the times list db.");
-            stmt.close();
-
-        } catch (ClassNotFoundException | SQLException ex) {
-
-            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    void insertTimeData(int routeId, int startTime) {
-
-        getStopNamesForTimeDataInsertion(routeId, startTime);
-    }
-
-    void getStopNamesForTimeDataInsertion(int routeId, int startTime) {
-
-        String stopName;
-        Scanner input = new Scanner(System.in);
-        try {
-            //using prepared statement to get the list of clubs
-            Statement stmt = routesCon().createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "`");
-            while (rs.next()) {
-
-                stopName = rs.getString("stopname");
-                System.out.println("Enter the time of departure from " + stopName);
-                String time = input.next();
-
-                insertTimeDataForStops(routeId, startTime, stopName, getSeconds(time));
-
-            }
-        } catch (ClassNotFoundException | SQLException ex) {
-            //shows error if unsuccessful
-            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    void insertTimeDataForStops(int routeId, int startTime, String stopName, int time) {
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + getRouteName(routeId), "root", "Mypassword1234");
-
-            PreparedStatement stmt = con.prepareStatement("INSERT INTO `" + getRouteName(routeId) + "_" + startTime + "` (stopname, time, currentcap, maxcap) VALUES (?, ?, 0, 30)");
-            stmt.setString(1, stopName);
-            stmt.setInt(2, time);
-
-            stmt.execute();
-            System.out.println("Succesfully added the new stop to the time table.");
-            stmt.close();
-
-        } catch (ClassNotFoundException | SQLException ex) {
-
-            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-    }
-
-    void getTheListOfRoutesAndTimes(int routeId) {
-
-        int routeAndTimeId;
-        String routeAndTime;
-        int startTime;
-
-        try {
-
-            Statement stmt = routeTimesCon().createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "`");
-            while (rs.next()) {
-
-                routeAndTimeId = rs.getInt("id");
-                routeAndTime = rs.getString("routeandtime");
-                startTime = rs.getInt("starttime");
-
-                System.out.println("ID: " + routeAndTimeId + "\t\tRoute: " + getRouteName(routeId) + "\t\tTIme: " + returnRealTime(startTime));
-
-            }
-            stmt.close();
-        } catch (ClassNotFoundException | SQLException ex) {
-
-            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
+    //find route and time (schedule) method
     String findRouteAndTimeName(int routeId, int routeAndTimeId) {
         String routeAndTime = null;
         try {
@@ -383,43 +453,86 @@ public class DataBaseCon {
 
     }
 
-    void chooseRouteAndTime(int routeId, String routeAndTimeName) {
+    //find the earliest schedule name method
+    String findTheEarliestBus(int routeId, int departureId, int departureTime, int destinationId, int numOfTickets) {
 
-        int stopId;
-        String stopName;
-        int stopTime;
-        int currentCap;
-        int maxCap;
+        String routeAndTimeName;
+        String returnedRouteAndTimeName = null;
+        int minDiff = 300;
+        boolean found = false;
 
-        try {
+        while (!found && minDiff < 86400) {
+            try {
 
-            Class.forName("com.mysql.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + getRouteName(routeId), "root", "Mypassword1234");
+                Statement stmt = routeTimesCon().createStatement();
+                ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "`");
 
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + routeAndTimeName + "`");
-            while (rs.next()) {
+                while (rs.next()) {
 
-                stopId = rs.getInt("id");
-                stopName = rs.getString("stopname");
-                stopTime = rs.getInt("time");
-                currentCap = rs.getInt("currentcap");
-                maxCap = rs.getInt("maxcap");
+                    routeAndTimeName = rs.getString("routeandtime");
 
-                System.out.println("ID: " + stopId + "\t\tStop Name: " + stopName + "\nTime: " + returnRealTime(stopTime) + "\t\tCurrent Capacity: "
-                        + currentCap + "\t\tMaximum Capacity: " + maxCap);
-                System.out.println("");
-                System.out.println("");
+                    Class.forName("com.mysql.jdbc.Driver");
+                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + getRouteName(routeId), "root", "Mypassword1234");
+                    Statement stmt2 = con.createStatement();
+                    ResultSet rs2 = stmt2.executeQuery("SELECT * FROM `" + routeAndTimeName + "` WHERE id = " + departureId);
 
+                    int stopId;
+                    int stopTime;
+                    String stopName;
+                    int currentCap;
+                    int maxCap;
+
+                    while (rs2.next()) {
+
+                        stopTime = rs2.getInt("time");
+
+                        if (stopTime - departureTime >= 0 && stopTime - departureTime <= minDiff) {
+
+                            if (checkSpace(routeId, routeAndTimeName, departureId, destinationId, numOfTickets)) {
+                                System.out.println("\n\nEnough Space available!\n\n");
+                                System.out.println("\n\nYou have the following option");
+
+                                stopId = rs2.getInt("id");
+                                stopName = rs2.getString("stopname");
+
+                                currentCap = rs2.getInt("currentcap");
+                                maxCap = rs2.getInt("maxcap");
+
+                                System.out.println("\nID: " + stopId + "\t\tStop Name: " + stopName + "\nTime: " + returnRealTime(stopTime) + "\t\tCurrent Capacity: "
+                                        + currentCap + "\t\tMaximum Capacity: " + maxCap);
+                                System.out.println("");
+                                System.out.println("");
+
+                                returnedRouteAndTimeName = routeAndTimeName;
+                                found = true;
+                                break;
+
+                            }
+                        }
+                    }
+
+                }
+                stmt.close();
+            } catch (ClassNotFoundException | SQLException ex) {
+
+                Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
             }
-            stmt.close();
-        } catch (ClassNotFoundException | SQLException ex) {
 
-            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
+            minDiff += 300;
+        }
+
+        if (found) {
+
+            return returnedRouteAndTimeName;
+        } else {
+
+            System.out.println("\n\nNo Options Available");
+            return "notFound";
         }
 
     }
 
+    //check space method
     boolean checkSpace(int routeId, String routeAndTimeName, int departureStopId, int destinationStopId, int numberOfTickets) {
 
         int currentCap;
@@ -471,6 +584,7 @@ public class DataBaseCon {
 
     }
 
+    //book tickets method
     void bookTickets(int routeId, String routeAndTimeName, int departureStopId, int destinationStopId, int numberOfTickets) {
 
         int stopId;
@@ -512,6 +626,7 @@ public class DataBaseCon {
 
     }
 
+    //show order summary method
     void showOrderOutput(int routeId, String routeAndTimeName, int departureStopId, int destinationStopId) {
 
         String departureStopName = null;
@@ -559,113 +674,9 @@ public class DataBaseCon {
             Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        System.out.println("You tickets from " + departureStopName + " to " + destinationStopName + ", are booked.");
+        System.out.println("\n\nYou tickets from " + departureStopName + " to " + destinationStopName + ", are booked.\n");
         System.out.println("\nPlease depart the bus from " + departureStopName + " at " + returnRealTime(departureTime)
                 + " . Your esstimated arrival time to " + destinationStopName + " is at " + returnRealTime(destinationTime));
-
-    }
-
-    void getStopList(int routeId) {
-
-        String stopName;
-        int stopId;
-
-        try {
-
-            Statement stmt = routesCon().createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "`");
-
-            while (rs.next()) {
-
-                stopId = rs.getInt("id");
-                stopName = rs.getString("stopname");
-
-                System.out.println("ID: " + stopId + "\t\tStop: " + stopName);
-                System.out.println("");
-
-            }
-            stmt.close();
-        } catch (ClassNotFoundException | SQLException ex) {
-
-            Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-    String findTheEarliestBus(int routeId, int departureId, int departureTime, int destinationId, int numOfTickets) {
-
-        String routeAndTimeName;
-        String returnedRouteAndTimeName = null;
-        int minDiff = 300;
-        boolean found = false;
-
-        while (!found && minDiff < 86400) {
-            try {
-
-                Statement stmt = routeTimesCon().createStatement();
-                ResultSet rs = stmt.executeQuery("SELECT * FROM `" + getRouteName(routeId) + "`");
-
-                while (rs.next()) {
-
-                    routeAndTimeName = rs.getString("routeandtime");
-
-                    Class.forName("com.mysql.jdbc.Driver");
-                    Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + getRouteName(routeId), "root", "Mypassword1234");
-                    Statement stmt2 = con.createStatement();
-                    ResultSet rs2 = stmt2.executeQuery("SELECT * FROM `" + routeAndTimeName + "` WHERE id = " + departureId);
-
-                    int stopId;
-                    int stopTime;
-                    String stopName;
-                    int currentCap;
-                    int maxCap;
-
-                    while (rs2.next()) {
-
-                        stopTime = rs2.getInt("time");
-
-                        if (stopTime - departureTime >= 0 && stopTime - departureTime <= minDiff) {
-
-                            if (checkSpace(routeId, routeAndTimeName, departureId, destinationId, numOfTickets)) {
-                                System.out.println("Enough Space available!\n\n");
-                                System.out.println("You have the following option");
-
-                                stopId = rs2.getInt("id");
-                                stopName = rs2.getString("stopname");
-
-                                currentCap = rs2.getInt("currentcap");
-                                maxCap = rs2.getInt("maxcap");
-
-                                System.out.println("ID: " + stopId + "\t\tStop Name: " + stopName + "\nTime: " + returnRealTime(stopTime) + "\t\tCurrent Capacity: "
-                                        + currentCap + "\t\tMaximum Capacity: " + maxCap);
-                                System.out.println("");
-                                System.out.println("");
-
-                                returnedRouteAndTimeName = routeAndTimeName;
-                                found = true;
-                                break;
-
-                            }
-                        }
-                    }
-
-                }
-                stmt.close();
-            } catch (ClassNotFoundException | SQLException ex) {
-
-                Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            minDiff += 300;
-        }
-
-        if (found) {
-
-            return returnedRouteAndTimeName;
-        } else {
-
-            System.out.println("No Options Available");
-            return "notFound";
-        }
 
     }
 

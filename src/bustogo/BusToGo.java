@@ -20,19 +20,32 @@ public class BusToGo {
 
         Scanner input = new Scanner(System.in);
 
-        System.out.println("Wlecome to BusToGo App.\n\nEnter 1 for client and 2 for admin");
+        System.out.println("Wlecome to BusToGo App.\n\n\n");
+        System.out.println("Identify yourself please\n\n");
+        System.out.println("1-Client\n----------\n2-Admin\n----------\n3-Quit");
 
         int user = input.nextInt();
-
+        
+        //if client
         if (user == 1) {
+            
+            //calls the ClientApp class
+            ClientApp.clientOperations();
 
-            ClientApp client = new ClientApp();
+        } 
+        //if admin
+        else if (user == 2) {
+            
+            //calls the AdminApp class
+            AdminApp.adminOperations();
 
-            client.clientOperations();
+        } 
+        //if quits
+        else if (user == 3) {
 
-        } else if (user == 2) {
-            AdminApp admin = new AdminApp();
-            admin.adminOperations();
+            System.out.println("\n\nYou chose to quit\n\n");
+            System.out.println("\n\nThanks for using BusToGo.\n\n");
+            System.exit(0);
         }
     }
 }
