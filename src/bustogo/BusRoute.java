@@ -15,13 +15,13 @@ public class BusRoute {
 
     private static int busRouteId;
     private static String busRouteName;
-    private static int routeStartTime;
+    private static String routeStartTime;
     private static int routeAndTimeId;
     private static String routeAndTimeName;
     private static int departureStopId;
     private static int destinationStopId;
     private static int numberOfBookingTickets;
-    private static int departureTime;
+    private static String departureTime;
 
     DataBaseCon db = new DataBaseCon();
     Scanner input = new Scanner(System.in);
@@ -53,10 +53,10 @@ public class BusRoute {
     public void setBusRouteStartTime() {
 
         System.out.println("Enter the start time of the route");
-        routeStartTime = input.nextInt();
+        routeStartTime = input.next();
     }
 
-    public int getBusRouteStartTime() {
+    public String getBusRouteStartTime() {
 
         return routeStartTime;
 
@@ -65,6 +65,12 @@ public class BusRoute {
     public int getRouteAndTimeId() {
 
         return routeAndTimeId;
+    }
+
+    public String getRouteAndTimeName() {
+
+        return routeAndTimeName;
+
     }
 
     public void setDepartureStopId() {
@@ -97,9 +103,43 @@ public class BusRoute {
 
     }
 
-    public int getDepartureTime() {
+    public String getDepartureTime() {
 
         return departureTime;
+    }
+
+    public int getSeconds(String realTime) {
+
+        int seconds, minutes, hours;
+
+        char[] timeArray = realTime.toCharArray();
+
+        if (String.valueOf(timeArray[0]).equals("0")) {
+
+            String hourInString = String.valueOf(timeArray[1]);
+
+            hours = Integer.valueOf(hourInString);
+        } else {
+
+            String hourInString = String.valueOf(timeArray[0]) + String.valueOf(timeArray[1]);
+            hours = Integer.valueOf(hourInString);
+
+        }
+        if (String.valueOf(timeArray[3]).equals("0")) {
+
+            String minutesInString = String.valueOf(timeArray[4]);
+            minutes = Integer.valueOf(minutesInString);
+
+        } else {
+
+            String minutesInString = String.valueOf(timeArray[3]) + String.valueOf(timeArray[4]);
+            minutes = Integer.valueOf(minutesInString);
+
+        }
+
+        seconds = hours * 3600 + minutes * 60;
+        return seconds;
+
     }
 
     public void insertRoute() {
@@ -163,19 +203,19 @@ public class BusRoute {
         setBusRouteId();
         setBusRouteStartTime();
 
-        db.createTimeDataTable(getBusRouteId(), getBusRouteStartTime());
+        db.createTimeDataTable(getBusRouteId(), getSeconds(getBusRouteStartTime()));
 
     }
 
     public void insertTimeData() {
 
-        db.insertTimeData(getBusRouteId(), getBusRouteStartTime());
+        db.insertTimeData(getBusRouteId(), getSeconds(getBusRouteStartTime()));
 
     }
 
     public void insertRouteAndTimeIntoList() {
 
-        db.insertRouteAndTimeIntoList(getBusRouteId(), getBusRouteStartTime());
+        db.insertRouteAndTimeIntoList(getBusRouteId(), getSeconds(getBusRouteStartTime()));
 
     }
 
@@ -225,31 +265,31 @@ public class BusRoute {
 
     }
 
-    public String findTheEarliestBus(int departureId, int departTime, int destinationId, int numberOfTickets) {
+    public String findTheEarliestBus(int departureId, String departTime, int destinationId, int numberOfTickets) {
 
         departureStopId = departureId;
         departureTime = departTime;
         destinationStopId = destinationId;
         numberOfBookingTickets = numberOfTickets;
 
-        routeAndTimeName = db.findTheEarliestBus(getBusRouteId(), getDepartureStopId(), getDepartureTime(), getDestinationStopId(), getNumberOfBookingTickets());
+        routeAndTimeName = db.findTheEarliestBus(getBusRouteId(), getDepartureStopId(), getSeconds(getDepartureTime()), getDestinationStopId(), getNumberOfBookingTickets());
 
-        return routeAndTimeName;
+        return getRouteAndTimeName();
 
     }
 
-    public void bookTicketsForTheEarliestPossible(String earliestRouteAndTimeName){
+    public void bookTicketsForTheEarliestPossible(String earliestRouteAndTimeName) {
 
         routeAndTimeName = earliestRouteAndTimeName;
 
-        if (!(routeAndTimeName.equals("notFound"))) {
+        if (!(getRouteAndTimeName().equals("notFound"))) {
 
             System.out.println("\n\nWould You Like to Finalize? Y/N");
 
             String finalizeOrder = input.next();
             if (finalizeOrder.equals("y")) {
 
-                db.bookTickets(getBusRouteId(), routeAndTimeName,
+                db.bookTickets(getBusRouteId(), getRouteAndTimeName(),
                         getDepartureStopId(),
                         getDestinationStopId(),
                         getNumberOfBookingTickets()

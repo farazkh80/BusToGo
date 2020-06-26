@@ -59,7 +59,7 @@ public class ClientApp {
 
                 System.out.println("Enter the time of your departure");
 
-                int departureTime = input.nextInt();
+                String departureTime = input.next();
 
                 System.out.println("What stop would you like to get off at?(Enter the ID)");
 

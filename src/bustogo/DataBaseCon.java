@@ -78,6 +78,38 @@ public class DataBaseCon {
         }
     }
 
+    int getSeconds(String realTime) {
+        int seconds, minutes, hours;
+
+        char[] timeArray = realTime.toCharArray();
+
+        if (String.valueOf(timeArray[0]).equals("0")) {
+
+            String hourInString = String.valueOf(timeArray[1]);
+
+            hours = Integer.valueOf(hourInString);
+        } else {
+
+            String hourInString = String.valueOf(timeArray[0]) + String.valueOf(timeArray[1]);
+            hours = Integer.valueOf(hourInString);
+
+        }
+        if (String.valueOf(timeArray[3]).equals("0")) {
+
+            String minutesInString = String.valueOf(timeArray[4]);
+            minutes = Integer.valueOf(minutesInString);
+
+        } else {
+
+            String minutesInString = String.valueOf(timeArray[3]) + String.valueOf(timeArray[4]);
+            minutes = Integer.valueOf(minutesInString);
+
+        }
+
+        seconds = hours * 3600 + minutes * 60;
+        return seconds;
+    }
+
     String getRouteName(int routeId) {
         String routeName = null;
 
@@ -271,9 +303,9 @@ public class DataBaseCon {
 
                 stopName = rs.getString("stopname");
                 System.out.println("Enter the time of departure from " + stopName);
-                int time = input.nextInt();
+                String time = input.next();
 
-                insertTimeDataForStops(routeId, startTime, stopName, time);
+                insertTimeDataForStops(routeId, startTime, stopName, getSeconds(time));
 
             }
         } catch (ClassNotFoundException | SQLException ex) {
@@ -417,12 +449,10 @@ public class DataBaseCon {
                             available = true;
                         } else {
 
-                           
                             available = false;
                         }
                     } else {
 
-                        
                         available = false;
                     }
 
@@ -432,20 +462,16 @@ public class DataBaseCon {
 
             }
 
-            
         } catch (ClassNotFoundException | SQLException ex) {
 
             Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        
+
         return available;
 
     }
 
     void bookTickets(int routeId, String routeAndTimeName, int departureStopId, int destinationStopId, int numberOfTickets) {
-
-        
 
         int stopId;
         int newCap;
@@ -569,10 +595,10 @@ public class DataBaseCon {
 
         String routeAndTimeName;
         String returnedRouteAndTimeName = null;
-        int minDiff = 1800;
+        int minDiff = 300;
         boolean found = false;
 
-        while (!found && minDiff<86400) {
+        while (!found && minDiff < 86400) {
             try {
 
                 Statement stmt = routeTimesCon().createStatement();
@@ -600,7 +626,7 @@ public class DataBaseCon {
                         if (stopTime - departureTime >= 0 && stopTime - departureTime <= minDiff) {
 
                             if (checkSpace(routeId, routeAndTimeName, departureId, destinationId, numOfTickets)) {
-                                 System.out.println("Enough Space available!\n\n");
+                                System.out.println("Enough Space available!\n\n");
                                 System.out.println("You have the following option");
 
                                 stopId = rs2.getInt("id");
@@ -629,15 +655,14 @@ public class DataBaseCon {
                 Logger.getLogger(DataBaseCon.class.getName()).log(Level.SEVERE, null, ex);
             }
 
-            minDiff += 1800;
+            minDiff += 300;
         }
-        
-        
+
         if (found) {
 
             return returnedRouteAndTimeName;
         } else {
-            
+
             System.out.println("No Options Available");
             return "notFound";
         }

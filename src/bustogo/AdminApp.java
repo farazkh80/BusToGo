@@ -21,7 +21,7 @@ public class AdminApp {
 
         System.out.println("Welcome Admin");
         System.out.println("\n\n");
-        System.out.println("What Would You Like to Do?\n1-Creating a new bus route\n2-Insert time data to a certain route\n3-Get the List of Routes");
+        System.out.println("What Would You Like to Do?\n1-Creating a new bus route\n2-Insert time data to a certain route");
         int adminChoice = input.nextInt();
 
         switch (adminChoice) {
@@ -44,11 +44,7 @@ public class AdminApp {
 
                 break;
 
-            case 3:
-
-                newRoute.getRoutesList();
-
-                break;
+            
         }
 
     }
