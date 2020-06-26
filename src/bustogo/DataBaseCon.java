@@ -460,6 +460,8 @@ public class DataBaseCon {
         String returnedRouteAndTimeName = null;
         int minDiff = 300;
         boolean found = false;
+        boolean noSpace=true;
+        
 
         while (!found && minDiff < 86400) {
             try {
@@ -505,8 +507,13 @@ public class DataBaseCon {
 
                                 returnedRouteAndTimeName = routeAndTimeName;
                                 found = true;
+                                noSpace = false;
                                 break;
 
+                            }
+                            else{
+                                
+                                noSpace=true;
                             }
                         }
                     }
@@ -520,6 +527,11 @@ public class DataBaseCon {
 
             minDiff += 300;
         }
+        
+        if(noSpace){
+            
+            System.out.println("Not Enough Space available");
+        }
 
         if (found) {
 
@@ -529,6 +541,7 @@ public class DataBaseCon {
             System.out.println("\n\nNo Options Available");
             return "notFound";
         }
+        
 
     }
 

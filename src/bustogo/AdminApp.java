@@ -38,7 +38,7 @@ public class AdminApp {
                     System.out.println("\n----------------------------\n| Creating a New Bus Route |\n----------------------------\n");
 
                     //prompts for the route name and inserts it into the database
-                    newRoute.insertRoute();
+                     newRoute.insertRoute();
                     //creates a stop list for the route in the database
                     newRoute.createStopListTable();
                     //inserts the stops in the stop list
